@@ -5,6 +5,23 @@ def part1(bingo_data):
     print('Q: What will your final score be if you choose that board?')
     final_score = 0
 
+    (bingo_numbers, np_bingo_boards, np_bingo_boards_marked) = get_bingo_numbers_and_np_boards(bingo_data)
+
+    # Start calling bingo numbers
+    for i, number in enumerate(bingo_numbers):
+        np_bingo_boards_marked = call_number(number, np_bingo_boards, np_bingo_boards_marked)
+
+        bingo_board_indices = check_boards_for_bingo(np_bingo_boards_marked)
+
+        if bingo_board_indices:
+            first_bingo_idx = bingo_board_indices[0]
+            final_score = get_bingo_board_score(np_bingo_boards[first_bingo_idx], np_bingo_boards_marked[first_bingo_idx], number)
+            break
+
+    print(f'A: {final_score}')
+
+
+def get_bingo_numbers_and_np_boards(bingo_data):
     bingo_numbers = bingo_data.readline().split(',')
     bingo_boards = ''.join(bingo_data.readlines()[1:]).split('\n\n')
 
@@ -24,23 +41,7 @@ def part1(bingo_data):
         # Also create an empty 5x5 array to keep track of numbers called for this board
         np_bingo_boards_marked.append(np.zeros((5,5)))
 
-
-    # Start calling bingo numbers
-    for i, number in enumerate(bingo_numbers):
-        np_bingo_boards_marked = call_number(number, np_bingo_boards, np_bingo_boards_marked)
-
-        # # 5 numbers are required for bingo
-        # ...but maybe a number can show up more than once, so bingo could be gotten in less than 5 number calls
-        # if i < 5:
-        #     continue;
-
-        bingo_board_idx = check_boards_for_bingo(np_bingo_boards_marked)
-
-        if bingo_board_idx > -1:
-            final_score = get_bingo_board_score(np_bingo_boards[bingo_board_idx], np_bingo_boards_marked[bingo_board_idx], number)
-            break
-
-    print(f'A: {final_score}')
+    return (bingo_numbers, np_bingo_boards, np_bingo_boards_marked)
 
 
 def call_number(num, np_bingo_boards, np_bingo_boards_marked):
@@ -66,19 +67,21 @@ def mark_board(num, np_bingo_board, np_bingo_board_marked):
     return np_bingo_board_marked
 
 
-def check_boards_for_bingo(np_bingo_boards_marked):
+def check_boards_for_bingo(np_bingo_boards_marked, skip_indices=[]):
     """Check boards to see if any have gotten bingo.
-    Return the index of the first board that has bingo, or -1 if none do.
+    Return list of the indices of any boards that have bingo.
     """
-    bingo_board_idx = -1
+    bingo_board_indices = []
 
-    for i, board in enumerate(np_bingo_boards_marked):
+    for board_idx, board in enumerate(np_bingo_boards_marked):
+        if board_idx in skip_indices:
+            continue
+
         bingo = board.all(axis=0).any() or board.all(axis=1).any()
         if bingo:
-            bingo_board_idx = i
-            break
+            bingo_board_indices.append(board_idx)
 
-    return bingo_board_idx
+    return bingo_board_indices
 
 
 def get_bingo_board_score(np_bingo_board, np_bingo_board_marked, num_last_called):
@@ -86,8 +89,6 @@ def get_bingo_board_score(np_bingo_board, np_bingo_board_marked, num_last_called
     (rows, cols) = np.where(np_bingo_board_marked == 0)
 
     unmarked_numbers = [ int(np_bingo_board[coord]) for coord in zip(rows, cols) ]
-    # for coord in zip(rows, cols):
-    #     unmarked_numbers_sum += int(np_bingo_board[coord])
 
     score = sum(unmarked_numbers) * int(num_last_called)
     return score
@@ -96,5 +97,21 @@ def get_bingo_board_score(np_bingo_board, np_bingo_board_marked, num_last_called
 def part2(bingo_data):
     print('Q: Figure out which board will win last. Once it wins, what would its final score be?')
 
+    (bingo_numbers, np_bingo_boards, np_bingo_boards_marked) = get_bingo_numbers_and_np_boards(bingo_data)
 
-    print(f'A: {ans}')
+    last_winning_score = 0
+    winning_board_indices = []
+
+    # Start calling bingo numbers
+    for i, number in enumerate(bingo_numbers):
+        np_bingo_boards_marked = call_number(number, np_bingo_boards, np_bingo_boards_marked)
+
+        # bingo_board_idx = check_boards_for_bingo(np_bingo_boards_marked, winning_board_indices)
+        bingo_board_indices = check_boards_for_bingo(np_bingo_boards_marked, winning_board_indices)
+
+        for bingo_board_idx in bingo_board_indices:
+            if bingo_board_idx > -1 and bingo_board_idx not in winning_board_indices:
+                winning_board_indices.append(bingo_board_idx)
+                last_winning_score = get_bingo_board_score(np_bingo_boards[bingo_board_idx], np_bingo_boards_marked[bingo_board_idx], number)
+
+    print(f'A: {last_winning_score}')
