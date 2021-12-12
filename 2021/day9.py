@@ -1,3 +1,4 @@
+import math
 import numpy as np
 
 def part1(heightmap):
@@ -58,5 +59,59 @@ def get_low_point_coords(heightmap_arr):
 
 
 def part2(heightmap):
-    print('Q:')
+    print('Q: What do you get if you multiply together the sizes of the three largest basins?')
+
+    heightmap_arr = get_heightmap_arr(heightmap)
+    basins = get_basins(heightmap_arr)
+
+    basin_sizes = [len(basin) for basin in basins]
+    basin_sizes.sort(reverse=True)
+    largest_three_basin_sizes = [basin_sizes[x] for x in range(3)]
+
+    ans = math.prod(largest_three_basin_sizes)
     print(f'A: {ans}')
+
+
+def get_basins(heightmap_arr):
+    """Return list of basins containing sets of coords in each basin."""
+    low_point_coords = get_low_point_coords(heightmap_arr)
+    basins = []
+    coords_already_checked = {coord for coord in low_point_coords}
+
+    # For each low point, check its neighbors to see if they're also in the basin (not a 9, or edge of board)
+    for low_point in low_point_coords:
+        basin = {low_point}
+        (basin, coords_already_checked) = expand_basin(heightmap_arr, basin, low_point, coords_already_checked)
+        basins.append(basin)
+
+    return basins
+
+
+def expand_basin(heightmap_arr, basin, coord, coords_already_checked):
+    """Recursively add neighbors of this coord to this basin if they belong.
+    Return basin and list of coords already checked (to avoid neighbors checking neighbors ad infinitum).
+    """
+    (y_max, x_max) = heightmap_arr.shape
+    (y0, x0) = coord
+
+    # Get neighbor elements that exist
+    neighbors = []
+    for y in [y0-1, y0+1]:
+        neighbor_coord = (y, x0)
+        if (-1 < y < y_max) and (neighbor_coord not in coords_already_checked):
+            neighbors.append(neighbor_coord)
+        coords_already_checked.add(neighbor_coord)
+    for x in [x0-1, x0+1]:
+        neighbor_coord = (y0, x)
+        if (-1 < x < x_max) and (neighbor_coord not in coords_already_checked):
+            neighbors.append(neighbor_coord)
+        coords_already_checked.add(neighbor_coord)
+
+    # Add neighbors to this basin
+    for neighbor_coord in neighbors:
+        neighbor_val = int(heightmap_arr[neighbor_coord])
+        if neighbor_val < 9:
+            basin.add(neighbor_coord)
+            (basin, coords_already_checked) = expand_basin(heightmap_arr, basin, neighbor_coord, coords_already_checked)
+
+    return basin, coords_already_checked
