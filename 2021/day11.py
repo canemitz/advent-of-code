@@ -71,6 +71,14 @@ def get_octo_neighbor_coords(arr, coord):
     return neighbor_coords
 
 
-def part2(input_data):
-    print('Q:')
-    print(f'A: {ans}')
+def part2(octopus_energy_levels):
+    print('Q: What is the first step during which all octopuses flash?')
+    octopus_arr = get_octopus_arr(octopus_energy_levels)
+
+    step_n = 0
+    num_flashes = 0
+    while num_flashes != 100:
+        step_n += 1
+        (octopus_arr, num_flashes) = take_a_step(octopus_arr)
+
+    print(f'A: {step_n}')
