@@ -167,6 +167,66 @@ def get_four_neighbor_coords(arr, coord):
     return neighbor_coords
 
 
-def part_2(input_data):
-    print('Q:')
-    print(f'A: {ans}')
+def part2(input_data):
+    print('Q: Using the full map, what is the lowest total risk of any path from the top left to the bottom right?')
+
+    global map_arr
+    global map_arr_expanded
+
+    get_map_arr(input_data)
+    get_map_arr_expanded(10)
+
+    (n_rows, n_cols) = map_arr.shape
+    origin = (0, 0)
+    destination = (n_rows-1, n_cols-1)
+    (distances_to_coords, prev_coords) = dijkstra(origin, destination)
+
+    lowest_total_risk = distances_to_coords[destination]
+
+    print(f'A: {lowest_total_risk}')
+
+
+def get_map_arr_expanded(size):
+    global map_arr
+    global map_arr_expanded
+    global map_flattened
+
+    map_tiles = [map_arr]
+
+    # Get incremented mini maps needed
+    for x in range(1, (2*size)-1):
+        next_map_tile = get_incremented_map_arr(map_tiles[x-1])
+        map_tiles.append(next_map_tile)
+
+    # Make map_tiles repeat as needed for easy slicing
+    map_tiles *= size*size
+
+    # Get the columns of the expanded map
+    expanded_map_cols = []
+    i_0 = 0
+    i_1 = size
+    for x in range(size):
+        col = np.concatenate(map_tiles[i_0:i_1])
+        expanded_map_cols.append(col)
+        i_0 += 1
+        i_1 += 1
+
+    # Create the expanded map from the columns
+    map_arr_expanded = np.concatenate(expanded_map_cols, axis=1)
+
+    # Assign to map_arr so I don't have to change the other functions that use that global
+    map_arr = map_arr_expanded
+
+    map_flattened = get_map_flattened(map_arr)
+
+
+def get_incremented_map_arr(map_tile):
+    # Add 1 to each element in the map_tile
+    incremented_map_arr = map_tile + 1
+
+    # Check for any values greater than 9, and set them to 1
+    for coord in zip(*np.where(incremented_map_arr == 10)):
+        incremented_map_arr[coord] = 1
+
+    return incremented_map_arr
+
