@@ -1,33 +1,30 @@
 import math
 import numpy as np
 import datetime
-
+import networkx as nx
 
 def part1(input_data):
     print('Q: What is the lowest total risk of any path from the top left to the bottom right?')
-    global map_arr
 
-    get_map_arr(input_data)
+    map_arr       = get_map_arr(input_data)
+    map_flattened = get_map_flattened(map_arr)
+    map_graph     = get_map_graph(map_arr, map_flattened)
 
     (n_rows, n_cols) = map_arr.shape
     origin = (0, 0)
     destination = (n_rows-1, n_cols-1)
-    (distances_to_coords, prev_coords) = dijkstra(origin, destination)
 
-    lowest_total_risk = distances_to_coords[destination]
+    lowest_total_risk = nx.shortest_path_length(map_graph, source=origin, target=destination, weight='risk_level')
 
     print(f'A: {lowest_total_risk}')
 
 
 def get_map_arr(input_data):
-    global map_arr
-    global map_flattened
-
     map_arr = np.array(
         [ [int(x) for x in line.strip()] for line in input_data.readlines() ]
     )
 
-    map_flattened = get_map_flattened(map_arr)
+    return map_arr
 
 
 def get_map_flattened(map_arr):
@@ -40,111 +37,24 @@ def get_map_flattened(map_arr):
     return map_flattened
 
 
-def dijkstra(origin, destination):
-    # distances = {}
-    global map_arr
-    global map_flattened
+def get_map_graph(map_arr, map_flattened):
+    map_graph = nx.DiGraph()
 
-    # distances from origin to vertex (key)
-    dist = {}
-    # points to previous-hop nodes on the shortest path from source to the given vertex
-    prev = {}
+    map_graph.add_nodes_from(map_flattened)
 
-    # Populate dist and prev
-    for v in map_flattened:
-        dist[v] = float('inf')
-        prev[v] = None
-    dist[origin] = 0
-    dist = sort_dict(dist)
+    edges = []
+    for node in map_flattened:
+        node_risk_level = map_arr[node]
+        node_neighbors = get_four_neighbor_coords(map_arr, node)
 
-    # Q is a set that (initially) holds each vertex
-    Q = set(map_flattened)
+        for neighbor in node_neighbors:
+            neighbor_risk_level = map_arr[neighbor]
+            edge = (node, neighbor, {'risk_level': neighbor_risk_level})
+            edges.append(edge)
 
-    # Skip sorting dist the first time (might save some time?)
-    sort_dist = False
-    # init vars to print progress
-    max_Q = len(Q)
-    max_Q_over_20 = int(max_Q / 20)
+    map_graph.add_edges_from(edges)
 
-    # While there are vertices left in Q
-    while Q:
-
-        # Print progress every 5% fewer vertices in Q
-        len_Q = len(Q)
-        if not len_Q % max_Q_over_20:
-            print(f'{datetime.datetime.now()}: Looping while Q, {100 - int(100 * len_Q / max_Q)}% done ({len_Q} vertices remaining)')
-
-        u = get_vertex_in_Q_with_smallest_dist(Q, dist, sort_dist)
-        sort_dist = True
-
-        if u == destination:
-            break
-
-        Q.remove(u)
-
-        neighbors_of_u = get_four_neighbor_coords(map_arr, u)
-        for v in neighbors_of_u:
-            if v in Q:
-                # Check potential new path: dist[u] plus distance from u to v (current node to neighbor)
-                alt_length = dist[u] + get_length(u, v)
-
-                if alt_length < dist[v]:
-                    dist[v] = alt_length
-                    prev[v] = u
-
-    return dist, prev
-
-
-def get_vertex_in_Q_with_smallest_dist(Q, dist, sort_dist):
-    dist_in_Q = {}
-
-    # Get the dist dictionary for only the vertices in the set Q
-    for v in dist:
-        if v in Q:
-            dist_in_Q[v] = dist[v]
-
-    # Sort dist_in_Q by value
-    dist_in_Q_sorted = sort_dict(dist_in_Q) if sort_dist else dist_in_Q
-
-    u = None
-    for v in dist_in_Q_sorted:
-        u = v
-        break
-
-    return u
-
-
-def sort_dict(dictionary):
-    # Get an iterable of tuples, where tuple[0] is the key, and tuple[1] is the value
-    list_of_tuples = dictionary.items()
-
-    # Sort the list of tuples by the dictionary value
-    sorted_tuples = sorted(list_of_tuples, key=lambda entry: entry[1])
-
-    # Stuff the sorted list of tuples back into a dictionary
-    sorted_dict = {key: val for key, val in sorted_tuples}
-
-    return sorted_dict
-
-
-def get_length(u, v):
-    """Return distance (risk score) going from coord u to v."""
-    global map_arr
-
-    (y_max, x_max) = map_arr.shape
-    (y_u, x_u) = u
-    (y_v, x_v) = v
-
-    length = float('inf')
-    if ( (y_u > y_max) or (x_u > x_max) or (y_v > y_max) or (x_v > x_max) ):
-        length = float(inf)
-    else:
-        if (y_u == y_v) and (abs(x_u - x_v) == 1):
-            length = map_arr[(y_v, x_v)]
-        elif (x_u == x_v) and (abs(y_u - y_v) == 1):
-            length = map_arr[(y_v, x_v)]
-
-    return length
+    return map_graph
 
 
 def get_four_neighbor_coords(arr, coord):
@@ -230,3 +140,7 @@ def get_incremented_map_arr(map_tile):
 
     return incremented_map_arr
 
+
+def part2(input_data):
+    print('Q: Using the full map, what is the lowest total risk of any path from the top left to the bottom right?')
+    print(f'A: {ans}')
