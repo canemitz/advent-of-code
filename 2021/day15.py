@@ -1,6 +1,5 @@
 import math
 import numpy as np
-import datetime
 import networkx as nx
 
 def part1(input_data):
@@ -80,27 +79,21 @@ def get_four_neighbor_coords(arr, coord):
 def part2(input_data):
     print('Q: Using the full map, what is the lowest total risk of any path from the top left to the bottom right?')
 
-    global map_arr
-    global map_arr_expanded
+    map_arr          = get_map_arr(input_data)
+    map_arr_expanded = get_map_arr_expanded(map_arr, 5)
+    map_flattened    = get_map_flattened(map_arr_expanded)
+    map_graph        = get_map_graph(map_arr_expanded, map_flattened)
 
-    get_map_arr(input_data)
-    get_map_arr_expanded(10)
-
-    (n_rows, n_cols) = map_arr.shape
+    (n_rows, n_cols) = map_arr_expanded.shape
     origin = (0, 0)
     destination = (n_rows-1, n_cols-1)
-    (distances_to_coords, prev_coords) = dijkstra(origin, destination)
 
-    lowest_total_risk = distances_to_coords[destination]
+    lowest_total_risk = nx.shortest_path_length(map_graph, source=origin, target=destination, weight='risk_level', method='bellman-ford')
 
     print(f'A: {lowest_total_risk}')
 
 
-def get_map_arr_expanded(size):
-    global map_arr
-    global map_arr_expanded
-    global map_flattened
-
+def get_map_arr_expanded(map_arr, size):
     map_tiles = [map_arr]
 
     # Get incremented mini maps needed
@@ -124,10 +117,7 @@ def get_map_arr_expanded(size):
     # Create the expanded map from the columns
     map_arr_expanded = np.concatenate(expanded_map_cols, axis=1)
 
-    # Assign to map_arr so I don't have to change the other functions that use that global
-    map_arr = map_arr_expanded
-
-    map_flattened = get_map_flattened(map_arr)
+    return map_arr_expanded
 
 
 def get_incremented_map_arr(map_tile):
@@ -139,8 +129,3 @@ def get_incremented_map_arr(map_tile):
         incremented_map_arr[coord] = 1
 
     return incremented_map_arr
-
-
-def part2(input_data):
-    print('Q: Using the full map, what is the lowest total risk of any path from the top left to the bottom right?')
-    print(f'A: {ans}')
