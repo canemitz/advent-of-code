@@ -1,11 +1,9 @@
-def part1(input_data):
+def part1(puzzle_input):
     print('Q: Find the Elf carrying the most Calories. How many total Calories is that Elf carrying?')
-
-    input_arr = input_data.read().strip().split('\n')
 
     elf_totals = []
     current_elf_calories = 0
-    for calories in input_arr:
+    for calories in puzzle_input:
         if calories == '':
             elf_totals.append(current_elf_calories)
             current_elf_calories = 0
@@ -17,14 +15,12 @@ def part1(input_data):
     print(f'A: {ans}')
 
 
-def part2(input_data):
+def part2(puzzle_input):
     print('Q: Find the top three Elves carrying the most Calories. How many Calories are those Elves carrying in total?')
-
-    input_arr = input_data.read().strip().split('\n')
 
     elf_totals = []
     current_elf_calories = 0
-    for calories in input_arr:
+    for calories in puzzle_input:
         if calories == '':
             elf_totals.append(current_elf_calories)
             current_elf_calories = 0

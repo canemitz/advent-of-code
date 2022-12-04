@@ -1,8 +1,14 @@
-def part1(input_data):
+def part1(puzzle_input):
     print('Q:')
+
+
+
     print(f'A: {ans}')
 
 
-def part2(input_data):
+def part2(puzzle_input):
     print('Q:')
+
+
+
     print(f'A: {ans}')
