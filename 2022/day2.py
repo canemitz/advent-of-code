@@ -4,12 +4,6 @@ opponent_shape_codes = {
     'C': 'scissors'
 }
 
-my_shape_codes = {
-    'X': 'rock',
-    'Y': 'paper',
-    'Z': 'scissors'
-}
-
 shape_scores = {
     'rock'    : 1,
     'paper'   : 2,
@@ -24,6 +18,12 @@ outcome_scores = {
 
 def part1(puzzle_input):
     print('Q: What would your total score be if everything goes exactly according to your strategy guide?')
+
+    my_shape_codes = {
+        'X': 'rock',
+        'Y': 'paper',
+        'Z': 'scissors'
+    }
 
     my_total_score = 0
     for codes in puzzle_input:
@@ -68,8 +68,47 @@ def play(shape1, shape2):
 
 
 def part2(puzzle_input):
-    print('Q:')
+    print("Q: Following the Elf's instructions for the second column, what would your total score be if everything goes exactly according to your strategy guide?")
 
+    shape_for_outcome_against_shape = {
+        'win': {
+            'rock'    : 'paper',
+            'paper'   : 'scissors',
+            'scissors': 'rock'
+        },
+        'lose': {
+            'rock'    : 'scissors',
+            'paper'   : 'rock',
+            'scissors': 'paper'
+        },
+        'draw': {
+            'rock'    : 'rock',
+            'paper'   : 'paper',
+            'scissors': 'scissors'
+        }
+    }
 
+    desired_outcome_from_code = {
+        'X': 'lose',
+        'Y': 'draw',
+        'Z': 'win'
+    }
+
+    my_total_score = 0
+    for codes in puzzle_input:
+        (opponent_shape_code, my_instruction) = codes.split()
+        opponent_shape = opponent_shape_codes[opponent_shape_code]
+
+        desired_outcome = desired_outcome_from_code[my_instruction]
+        my_shape = shape_for_outcome_against_shape[desired_outcome][opponent_shape]
+        my_total_score += shape_scores[my_shape]
+
+        winner = play(opponent_shape, my_shape)
+        if winner == 0:
+            my_total_score += outcome_scores['draw']
+        elif winner == 2:
+            my_total_score += outcome_scores['win']
+
+    ans = my_total_score
 
     print(f'A: {ans}')
