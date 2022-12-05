@@ -26,9 +26,20 @@ def get_priority(char):
 
     return priority
 
+
 def part2(puzzle_input):
-    print('Q:')
+    print('Q: Find the item type that corresponds to the badges of each three-Elf group. What is the sum of the priorities of those item types?')
 
+    sum_of_priorities = 0
+    for i in range(0, len(puzzle_input), 3):
+        rucksack_0 = set(puzzle_input[i])
+        rucksack_1 = set(puzzle_input[i+1])
+        rucksack_2 = set(puzzle_input[i+2])
 
+        items_in_all_three = rucksack_0.intersection(rucksack_1, rucksack_2)
+        for item in items_in_all_three:
+            sum_of_priorities += get_priority(item)
+
+    ans = sum_of_priorities
 
     print(f'A: {ans}')
