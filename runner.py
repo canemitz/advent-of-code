@@ -23,13 +23,20 @@ def main():
 
     print(f"Getting solution for year {year}, day {day}, part {part}{' (using example input)' if example else ''}...\n")
 
-    if not print_input:
-        solutions = importlib.import_module(f'{year}.day{day}')
-        solution_function = getattr(solutions, f'part{part}')
+    solutions = importlib.import_module(f'{year}.day{day}')
+    solution_function = getattr(solutions, f'part{part}')
 
     input_filepath = f"{year}/input_files/day{day}{'_example' if example else ''}.txt"
     with open(input_filepath) as input_file:
-        parsed_input = parse_input(input_file, skip_parsing)
+        try:
+            parse_input_function = solutions.parse_input
+        except:
+            parse_input_function = parse_input
+
+        if skip_parsing:
+            parsed_input = input_file
+        else:
+            parsed_input = parse_input_function(input_file)
 
         if print_input:
             print(f'Puzzle input:\n{parsed_input}')
@@ -48,15 +55,12 @@ def parse_args():
     parser.add_argument('-p', '--part', default=1)
     parser.add_argument('-x', '--example', action='store_true', help='Use example puzzle input')
     parser.add_argument('-s', '--skip-parsing', action='store_true', help='Pass file object directly to solution function')
-    parser.add_argument('-pr', '--print-input', action='store_true', help='Print puzzle input instead of calling solution function')
+    parser.add_argument('-pr', '--print-input', action='store_true', help='Print parsed puzzle input instead of calling solution function')
 
     return parser.parse_args()
 
 
-def parse_input(input_file_obj, skip_parsing):
-    if skip_parsing:
-        return input_file_obj
-    else:
+def parse_input(input_file_obj):
         return input_file_obj.read().strip().split('\n')
 
 
