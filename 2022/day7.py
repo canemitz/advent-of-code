@@ -100,8 +100,19 @@ def set_in_dict(dict_, keys_list, value):
 
 
 def part2(puzzle_input):
-    print('Q:')
+    print('Q: Find the smallest directory that, if deleted, would free up enough space on the filesystem to run the update. What is the total size of that directory?')
 
+    fs = build_fs_dict(puzzle_input)
+    dir_sizes, fs_size = get_size_of_dir(fs['/'])
 
+    disk_size = 70000000
+    space_required = 30000000
+    space_free = disk_size - fs_size
+    extra_space_needed = space_required - space_free
+
+    ans = 0
+    for dir_size in dir_sizes.values():
+        if (dir_size >= extra_space_needed) and ((dir_size < ans) or (not ans)):
+            ans = dir_size
 
     print(f'A: {ans}')
