@@ -26,7 +26,13 @@ def main():
     solutions = importlib.import_module(f'{year}.day{day}')
     solution_function = getattr(solutions, f'part{part}')
 
-    input_filepath = f"{year}/input_files/day{day}{'_example' if example else ''}.txt"
+    example_str = ''
+    if example:
+        example_str = '_example'
+        if example > 1:
+            example_str += str(example)
+
+    input_filepath = f"{year}/input_files/day{day}{example_str}.txt"
     with open(input_filepath) as input_file:
         try:
             parse_input_function = solutions.parse_input
@@ -53,7 +59,7 @@ def parse_args():
     parser.add_argument('-y', '--year', default=today.year)
     parser.add_argument('-d', '--day',  default=today.day)
     parser.add_argument('-p', '--part', default=1)
-    parser.add_argument('-x', '--example', action='store_true', help='Use example puzzle input')
+    parser.add_argument('-x', '--example', action='count', help='Use example puzzle input (pass multiple times to use alternate example inputs)')
     parser.add_argument('-s', '--skip-parsing', action='store_true', help='Pass file object directly to solution function')
     parser.add_argument('-pr', '--print-input', action='store_true', help='Print parsed puzzle input instead of calling solution function')
 
