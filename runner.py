@@ -7,6 +7,7 @@
 import argparse
 import datetime
 import importlib
+import json
 import time
 
 
@@ -20,6 +21,7 @@ def main():
     example      = args.example
     skip_parsing = args.skip_parsing
     print_input  = args.print_input
+    print_json   = args.json
 
     print(f"Getting solution for year {year}, day {day}, part {part}{' (using example input)' if example else ''}...\n")
 
@@ -45,6 +47,8 @@ def main():
             parsed_input = parse_input_function(input_file)
 
         if print_input:
+            if print_json:
+                parsed_input = json.dumps(parsed_input, indent=4)
             print(f'Puzzle input:\n{parsed_input}')
         else:
             solution_function(parsed_input)
@@ -62,12 +66,13 @@ def parse_args():
     parser.add_argument('-x', '--example', action='count', help='Use example puzzle input (pass multiple times to use alternate example inputs)')
     parser.add_argument('-s', '--skip-parsing', action='store_true', help='Pass file object directly to solution function')
     parser.add_argument('-pr', '--print-input', action='store_true', help='Print parsed puzzle input instead of calling solution function')
+    parser.add_argument('-j', '--json', action='store_true', help='Print parsed puzzle input as json (helpful for dictionary-like inputs)')
 
     return parser.parse_args()
 
 
 def parse_input(input_file_obj):
-        return input_file_obj.read().strip().split('\n')
+    return input_file_obj.read().strip().split('\n')
 
 
 def print_time_taken(start_time):
