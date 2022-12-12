@@ -1,11 +1,11 @@
 import re
 import json
 
-def part1(puzzle_input):
-    print('Q: What is the level of monkey business after 20 rounds of stuff-slinging simian shenanigans?')
+def part1(puzzle_input, num_rounds=20):
+    print(f'Q: What is the level of monkey business after {num_rounds} rounds of stuff-slinging simian shenanigans?')
+
     monkeys = puzzle_input
 
-    num_rounds = 20
     for round_i in range(num_rounds):
         for monkey_i in range(len(monkeys)):
             monkeys = inspect_and_throw_items(monkey_i, monkeys)
@@ -62,8 +62,33 @@ def inspect_item(worry_level, operator, operand):
 
 
 def monkey_gets_bored(worry_level):
-    """Worry level goes down by a factor of 3 when a monkey gets bored."""
-    return int(worry_level / 3);
+    """Reduce worry level of an item.
+
+    Part 1: Worry level goes down by a factor of 3 when a monkey gets bored.
+
+    Part 2, initial attempt (not shown):
+            We don't need the actual worry level value, we just need to be able to determine whether any of the monkeys' tests pass.
+            That is, "worry level mod test" must be zero or non-zero.
+            We notice that if X is divisible by Y, then X - kY is also divisible by Y.
+            So, to ensure we don't alter the outcome of any of the monkeys' tests, we can multiple their test values together.
+            Then, we can subtract that value (repeatedly) from the worry level, and all test outcomes will be the same.
+            This way, we don't have to maintain an incredibly large worry_level when we don't need to.
+            ...this solution runs in 3s on the example input, but seems like it'll take hours on my actual input.
+
+    Part 2, better attempt:
+            Okay, the above logic is sound, but slow, since product_of_tests is still a very large number.
+            We notice that if X % Y = 0, then (X % kY) % Y = 0.
+            So, instead of subtracting that large product, we can do worry_level % product_of_tests and return a much smaller number.
+
+    """
+    global product_of_tests
+
+    if running_part1():
+        worry_level = int(worry_level / 3);
+    else:
+        worry_level = worry_level % product_of_tests
+
+    return worry_level
 
 
 def test_item(item, test):
@@ -78,11 +103,27 @@ def throw_to_monkey(item, receiving_monkey, monkeys):
 
 
 def part2(puzzle_input):
-    print('Q:')
+    print('Q: Starting again from the initial state in your puzzle input, what is the level of monkey business after 10000 rounds?')
+
+    global part
+    part = 2
+
+    global product_of_tests
+    product_of_tests = 1
+    for monkey in puzzle_input:
+        product_of_tests *= monkey['test']
+
+    part1(puzzle_input, 10000)
 
 
+def running_part1():
+    """We define the global part in part2, but not part1, so we can test whether that variable is defined to determine which part we're running."""
+    global part
 
-    print(f'A: {ans}')
+    try:
+        return part != 2
+    except:
+        return True
 
 
 def parse_input(input_file_obj):
