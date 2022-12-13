@@ -18,6 +18,7 @@ def main():
     year         = args.year
     day          = args.day
     part         = args.part
+    verbose      = args.verbose
     example      = args.example
     skip_parsing = args.skip_parsing
     print_input  = args.print_input
@@ -26,7 +27,7 @@ def main():
     print(f"Getting solution for year {year}, day {day}, part {part}{' (using example input)' if example else ''}...\n")
 
     solutions = importlib.import_module(f'{year}.day{day}')
-    solution_function = getattr(solutions, f'part{part}')
+    solution_function = getattr(solutions, f'part{part}{"_verbose" if verbose else ""}')
 
     example_str = ''
     if example:
@@ -64,6 +65,7 @@ def parse_args():
     parser.add_argument('-d', '--day',  default=today.day)
     parser.add_argument('-p', '--part', default=1)
     parser.add_argument('-x', '--example', action='count', help='Use example puzzle input (pass multiple times to use alternate example inputs)')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Print output for comparison with example')
     parser.add_argument('-s', '--skip-parsing', action='store_true', help='Pass file object directly to solution function')
     parser.add_argument('-pr', '--print-input', action='store_true', help='Print parsed puzzle input instead of calling solution function')
     parser.add_argument('-j', '--json', action='store_true', help='Print parsed puzzle input as json (helpful for dictionary-like inputs)')
