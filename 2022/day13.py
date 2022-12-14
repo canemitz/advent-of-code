@@ -50,15 +50,15 @@ def compare_pair(left, right):
         # If elements i in left and right lists indicate correct or incorrect ordering, use that
         max_len = max(len(left), len(right))
         for i in range(max_len):
-            if not left:
+            if i+1 > len(left):
                 items_in_correct_order = True
                 break
 
-            elif not right:
+            elif i+1 > len(right):
                 items_in_correct_order = False
                 break
 
-            sub_compare = compare_pair(left.pop(0), right.pop(0))
+            sub_compare = compare_pair(left[i], right[i])
             if type(sub_compare) is bool:
                 items_in_correct_order = sub_compare
                 break
@@ -95,17 +95,17 @@ def compare_pair_verbose(left, right, indent=''):
         # If elements i in left and right lists indicate correct or incorrect ordering, use that
         max_len = max(len(left), len(right))
         for i in range(max_len):
-            if not left:
+            if i+1 > len(left):
                 print(f'{indent}- Left side ran out of items, so inputs are in the right order')
                 items_in_correct_order = True
                 break
 
-            elif not right:
+            elif i+1 > len(right):
                 print(f'{indent}- Right side ran out of items, so inputs are not in the right order')
                 items_in_correct_order = False
                 break
 
-            sub_compare = compare_pair_verbose(left.pop(0), right.pop(0), indent)
+            sub_compare = compare_pair_verbose(left[i], right[i], indent)
             if type(sub_compare) is bool:
                 items_in_correct_order = sub_compare
                 break
