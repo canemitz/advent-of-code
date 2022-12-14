@@ -78,22 +78,31 @@ def parse_input(input_file_obj):
 
 
 def print_time_taken(start_time):
-    total_duration_seconds = round(time.time() - start_time)
+    total_duration_seconds = time.time() - start_time
 
     (hours, minutes_remaining) = divmod(total_duration_seconds, 3600)
     (minutes, seconds) = divmod(minutes_remaining, 60)
 
-    duration_str = ''
+    duration_arr = []
+    decimals = 3
+    if minutes:
+        duration_arr.append(f'{int(minutes)}m')
+        decimals = 2
     if hours:
-        duration_str += f' {hours}h'
-    if hours or minutes:
-        duration_str += f' {minutes}m'
-    if hours or minutes or seconds:
-        duration_str += f' {seconds}s'
+        duration_arr.insert(0, f'{int(hours)}h')
+        decimals = 0
+    if decimals:
+        factor = 10**decimals
+        seconds = round(seconds*factor) / factor
+        seconds_split = str(float(seconds)).split('.')
+        seconds = seconds_split[0] + '.' + seconds_split[1].ljust(decimals, '0')
     else:
-        duration_str = ' less than 1s'
+        seconds = round(seconds)
+    duration_arr.append(f'{seconds}s')
 
-    print(f'\n(solution duration{duration_str})')
+    duration_str = ' '.join(duration_arr)
+
+    print(f'\n(solution duration {duration_str})')
 
 
 if __name__ == '__main__':
