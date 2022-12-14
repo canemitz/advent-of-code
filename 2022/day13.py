@@ -123,11 +123,44 @@ def compare_pair_verbose(left, right, indent=''):
 
 
 def part2(puzzle_input):
-    print('Q:')
+    print('Q: Organize all of the packets into the correct order. What is the decoder key for the distress signal?')
+    packets = []
+    for packet_pair in puzzle_input:
+        packets += list(packet_pair)
 
+    divider_packets = [ [[2]], [[6]] ]
+    packets += divider_packets
 
+    sorted_packets = bubble_sort(packets)
+
+    # Packets have one-based indexing
+    divider_packet_idx_0 = sorted_packets.index(divider_packets[0]) + 1
+    divider_packet_idx_1 = sorted_packets.index(divider_packets[1]) + 1
+
+    decoder_key = f'{divider_packet_idx_0} * {divider_packet_idx_1}'
+    ans = f'{decoder_key} = {eval(decoder_key)}'
 
     print(f'A: {ans}')
+
+
+def bubble_sort(_list):
+    n = len(_list)
+
+    for _ in range(n):
+        is_sorted = True
+
+        for i in range(n - 1):
+            left  = _list[i]
+            right = _list[i+1]
+
+            if not compare_pair(left, right):
+                _list[i], _list[i+1] = right, left
+                is_sorted = False
+
+        if is_sorted:
+            break
+
+    return _list
 
 
 def parse_input(input_file_obj):
