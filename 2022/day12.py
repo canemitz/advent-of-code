@@ -59,9 +59,24 @@ def get_four_neighbor_coords(arr_shape, coord):
 
 
 def part2(puzzle_input):
-    print('Q:')
+    print('Q: What is the fewest steps required to move starting from any square with elevation a to the location that should get the best signal?')
+    global lowest_elevations
+    global end
 
+    destination = f'{end[0]}_{end[1]}'
 
+    map_graph = get_map_graph(puzzle_input)
+
+    path_lengths = []
+    for coord in lowest_elevations:
+        origin = f'{coord[0]}_{coord[1]}'
+        try:
+            path_length = nx.shortest_path_length(map_graph, source=origin, target=destination)
+            path_lengths.append(path_length)
+        except:
+            pass
+
+    ans = min(path_lengths)
 
     print(f'A: {ans}')
 
@@ -70,6 +85,8 @@ def parse_input(input_file_obj):
     """Convert input from letters to numbers and return as list of lists. Store global start and end coords."""
     global start
     global end
+    global lowest_elevations
+    lowest_elevations = []
 
     puzzle_input_letters = [ list(line) for line in input_file_obj.read().strip().split('\n') ]
 
@@ -86,6 +103,8 @@ def parse_input(input_file_obj):
                 elif letter == 'E':
                     end = (i, j)
                     letter = 'z'
+            if letter == 'a':
+                lowest_elevations.append((i, j))
 
             row.append(ord(letter) - 96)
         puzzle_input.append(row)
