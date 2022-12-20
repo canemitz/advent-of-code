@@ -112,8 +112,54 @@ def find_grove_coords(file):
 
 
 def part2(puzzle_input):
-    print('Q:')
+    print('Q: Apply the decryption key and mix your encrypted file ten times. What is the sum of the three numbers that form the grove coordinates?')
+
+    # Store numbers in file as list of dictionaries keyed by initial index
+    decryption_key = 811589153
+    decrypted_puzzle_input = [decryption_key*int(x) for x in puzzle_input]
+    decrypted_file = [ { i: int(decrypted_puzzle_input[i]) } for i in range(len(decrypted_puzzle_input)) ]
+
+    for j in range(10):
+        for i in range(len(decrypted_file)):
+            decrypted_file = mix_file(decrypted_file, i)
+    mixed_file = [ get_element_value(x) for x in decrypted_file ]
+
+    grove_coords = find_grove_coords(mixed_file)
+    ans = sum(grove_coords)
+
+    print(f'A: {ans}')
 
 
+def part2_verbose(puzzle_input):
+    """Interestingly, this shows that the arrangement of the example is different than shown.
+       My code matches Eric's example output, except his always has 0 at the beginning, while the zero
+       in mine never is at the start, but moves around various places towards the end of the arrangement.
+       Nevertheless, I get the correct final answer. Also, part1_verbose shows the same arrangement as the example.
+    """
+    print('Q: Apply the decryption key and mix your encrypted file ten times. What is the sum of the three numbers that form the grove coordinates?')
+
+    # Store numbers in file as list of dictionaries keyed by initial index
+    decryption_key = 811589153
+    decrypted_puzzle_input = [decryption_key*int(x) for x in puzzle_input]
+    decrypted_file = [ { i: int(decrypted_puzzle_input[i]) } for i in range(len(decrypted_puzzle_input)) ]
+
+    print(f'\nInitial arrangement:')
+    input(', '.join([ str(x) for x in decrypted_puzzle_input ]))
+
+    for j in range(10):
+        for i in range(len(decrypted_file)):
+            decrypted_file = mix_file(decrypted_file, i)
+
+        mixed_file = [ get_element_value(x) for x in decrypted_file ]
+        round_noun = 'rounds' if j else 'round'
+        print(f'\nAfter {j+1} {round_noun} of mixing:')
+        input(', '.join([ str(x) for x in mixed_file ]))
+
+    grove_coords = find_grove_coords(mixed_file)
+    print()
+    for i in range(len(grove_coords)):
+        print(f'The {i+1}000th number after 0 is {grove_coords[i]}.')
+
+    ans = f'{grove_coords[0]} + {grove_coords[1]} + {grove_coords[2]} = {sum(grove_coords)}'
 
     print(f'A: {ans}')
