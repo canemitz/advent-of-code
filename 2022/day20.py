@@ -1,13 +1,11 @@
 def part1(puzzle_input):
-    print('Q: Mix your encrypted file exactly once. What is the sum of the three numbers that form the grove coordinates?')
+    global num_mixes
 
-    # Store numbers in file as list of dictionaries keyed by initial index
-    encrypted_file = [ { i: int(puzzle_input[i]) } for i in range(len(puzzle_input)) ]
+    if not running_part2():
+        print('Q: Mix your encrypted file exactly once. What is the sum of the three numbers that form the grove coordinates?')
+        num_mixes = 1
 
-    for i in range(len(encrypted_file)):
-        encrypted_file = mix_file(encrypted_file, i)
-    mixed_file = [ get_element_value(x) for x in encrypted_file ]
-
+    mixed_file = get_mixed_file(puzzle_input, num_mixes)
     grove_coords = find_grove_coords(mixed_file)
     ans = sum(grove_coords)
 
@@ -15,18 +13,18 @@ def part1(puzzle_input):
 
 
 def part1_verbose(puzzle_input):
-    print('Q: Mix your encrypted file exactly once. What is the sum of the three numbers that form the grove coordinates?')
+    global num_mixes
 
-    # Store numbers in file as list of dictionaries keyed by initial index
-    encrypted_file = [ { i: int(puzzle_input[i]) } for i in range(len(puzzle_input)) ]
+    if not running_part2():
+        print('Q: Mix your encrypted file exactly once. What is the sum of the three numbers that form the grove coordinates?')
+        num_mixes = 1
 
     print(f'Initial arrangement:')
     input(', '.join(puzzle_input))
-    for i in range(len(encrypted_file)):
-        encrypted_file = mix_file_verbose(encrypted_file, i)
-    mixed_file = [ get_element_value(x) for x in encrypted_file ]
 
+    mixed_file = get_mixed_file_verbose(puzzle_input, num_mixes)
     grove_coords = find_grove_coords(mixed_file)
+
     print()
     for i in range(len(grove_coords)):
         print(f'The {i+1}000th number after 0 is {grove_coords[i]}.')
@@ -36,68 +34,102 @@ def part1_verbose(puzzle_input):
     print(f'A: {ans}')
 
 
-def mix_file(encrypted_file, original_idx):
-    current_idx = get_current_idx(encrypted_file, original_idx)
-    instruction = encrypted_file[current_idx][original_idx]
+def get_mixed_file(file, num_mixes):
+    # Store numbers in file as list of dictionaries keyed by initial index
+    file_dicts = [ { i: int(file[i]) } for i in range(len(file)) ]
 
-    encrypted_file = move_element(encrypted_file, current_idx, instruction)
-    return encrypted_file
+    for i in range(num_mixes):
+        for j in range(len(file_dicts)):
+            file_dicts = mix_file(file_dicts, j)
+
+    mixed_file = [ get_element_value(x) for x in file_dicts ]
+    return mixed_file
 
 
-def mix_file_verbose(encrypted_file, original_idx):
-    current_idx = get_current_idx(encrypted_file, original_idx)
-    instruction = encrypted_file[current_idx][original_idx]
+def get_mixed_file_verbose(file, num_mixes):
+    # Store numbers in file as list of dictionaries keyed by initial index
+    file_dicts = [ { i: int(file[i]) } for i in range(len(file)) ]
 
-    encrypted_file = move_element_verbose(encrypted_file, current_idx, instruction)
-    return encrypted_file
+    for i in range(num_mixes):
+        for j in range(len(file_dicts)):
+            file_dicts = mix_file_verbose(file_dicts, j)
+
+        mixed_file = [ get_element_value(x) for x in file_dicts ]
+
+        if running_part2():
+            round_noun = 'rounds' if i else 'round'
+            print(f'\nAfter {i+1} {round_noun} of mixing:')
+            input(', '.join([ str(x) for x in mixed_file ]))
+
+    return mixed_file
+
+
+def mix_file(file_dicts, original_idx):
+    current_idx = get_current_idx(file_dicts, original_idx)
+    instruction = file_dicts[current_idx][original_idx]
+
+    file_dicts = move_element(file_dicts, current_idx, instruction)
+    return file_dicts
+
+
+def mix_file_verbose(file_dicts, original_idx):
+    current_idx = get_current_idx(file_dicts, original_idx)
+    instruction = file_dicts[current_idx][original_idx]
+
+    if running_part2():
+        file_dicts = move_element(file_dicts, current_idx, instruction)
+    else:
+        file_dicts = move_element_verbose(file_dicts, current_idx, instruction)
+
+    return file_dicts
 
 
 def get_element_value(element_dict):
     return list(element_dict.values())[0]
 
 
-def get_current_idx(file, original_idx):
+def get_current_idx(file_dicts, original_idx):
     # Get list where the current_idx'th element is true (since all number dict keys are unique)
-    file_bool_list = list(map( lambda n_dict: original_idx in n_dict, file ) )
+    file_bool_list = list(map( lambda n_dict: original_idx in n_dict, file_dicts ) )
     current_idx = file_bool_list.index(True)
     return current_idx
 
 
-def move_element(file, current_idx, instruction):
-    element = file.pop(current_idx)
+def move_element(file_dicts, current_idx, instruction):
+    element = file_dicts.pop(current_idx)
 
-    max_idx = len(file)
+    max_idx = len(file_dicts)
     insert_idx = (current_idx + instruction) % max_idx
     if insert_idx == 0:
         insert_idx = max_idx
 
-    file.insert(insert_idx, element)
+    file_dicts.insert(insert_idx, element)
 
-    return file
+    return file_dicts
 
 
-def move_element_verbose(file, current_idx, instruction):
-    element = file.pop(current_idx)
+def move_element_verbose(file_dicts, current_idx, instruction):
+    element = file_dicts.pop(current_idx)
 
-    max_idx = len(file)
+    max_idx = len(file_dicts)
     insert_idx = (current_idx + instruction) % max_idx
     if insert_idx == 0:
         insert_idx = max_idx
 
-    file.insert(insert_idx, element)
+    file_dicts.insert(insert_idx, element)
 
-    current_arrangement = [ str( get_element_value(x) ) for x in file ]
+    current_arrangement = [ str( get_element_value(x) ) for x in file_dicts ]
     element_value = str( get_element_value(element) )
     if current_idx != insert_idx:
-        left_value = get_element_value(file[insert_idx-1])
+        left_value = get_element_value(file_dicts[insert_idx-1])
         right_idx = insert_idx + 1 if insert_idx < max_idx  else 0
-        right_value = str( get_element_value(file[right_idx]) )
+        right_value = str( get_element_value(file_dicts[right_idx]) )
         print(f'\n{element_value} moves between {left_value} and {right_value}:')
     else:
         print(f'\n{element_value} does not move:')
     input(', '.join(current_arrangement))
 
-    return file
+    return file_dicts
 
 
 def find_grove_coords(file):
@@ -116,18 +148,16 @@ def part2(puzzle_input):
 
     # Store numbers in file as list of dictionaries keyed by initial index
     decryption_key = 811589153
-    decrypted_puzzle_input = [decryption_key*int(x) for x in puzzle_input]
+    decrypted_puzzle_input = [str(decryption_key*int(x)) for x in puzzle_input]
     decrypted_file = [ { i: int(decrypted_puzzle_input[i]) } for i in range(len(decrypted_puzzle_input)) ]
 
-    for j in range(10):
-        for i in range(len(decrypted_file)):
-            decrypted_file = mix_file(decrypted_file, i)
-    mixed_file = [ get_element_value(x) for x in decrypted_file ]
+    global part
+    global num_mixes
 
-    grove_coords = find_grove_coords(mixed_file)
-    ans = sum(grove_coords)
+    part = 2
+    num_mixes = 10
 
-    print(f'A: {ans}')
+    part1(decrypted_puzzle_input)
 
 
 def part2_verbose(puzzle_input):
@@ -140,26 +170,23 @@ def part2_verbose(puzzle_input):
 
     # Store numbers in file as list of dictionaries keyed by initial index
     decryption_key = 811589153
-    decrypted_puzzle_input = [decryption_key*int(x) for x in puzzle_input]
+    decrypted_puzzle_input = [str(decryption_key*int(x)) for x in puzzle_input]
     decrypted_file = [ { i: int(decrypted_puzzle_input[i]) } for i in range(len(decrypted_puzzle_input)) ]
 
-    print(f'\nInitial arrangement:')
-    input(', '.join([ str(x) for x in decrypted_puzzle_input ]))
+    global part
+    global num_mixes
 
-    for j in range(10):
-        for i in range(len(decrypted_file)):
-            decrypted_file = mix_file(decrypted_file, i)
+    part = 2
+    num_mixes = 10
 
-        mixed_file = [ get_element_value(x) for x in decrypted_file ]
-        round_noun = 'rounds' if j else 'round'
-        print(f'\nAfter {j+1} {round_noun} of mixing:')
-        input(', '.join([ str(x) for x in mixed_file ]))
+    part1_verbose(decrypted_puzzle_input)
 
-    grove_coords = find_grove_coords(mixed_file)
-    print()
-    for i in range(len(grove_coords)):
-        print(f'The {i+1}000th number after 0 is {grove_coords[i]}.')
 
-    ans = f'{grove_coords[0]} + {grove_coords[1]} + {grove_coords[2]} = {sum(grove_coords)}'
+def running_part2():
+    """We define the global part in part2, but not part1, so we can test whether that variable is defined to determine which part we're running."""
+    global part
 
-    print(f'A: {ans}')
+    try:
+        return part == 2
+    except:
+        return False
