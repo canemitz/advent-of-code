@@ -1,0 +1,8 @@
+root: asdf + qwer
+asdf: 8
+qwer: aaaa + humn
+aaaa: bbbb + cccc
+bbbb: 2
+cccc: dddd + eeee
+dddd: 2
+eeee: 2
