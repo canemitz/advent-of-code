@@ -106,9 +106,22 @@ def pad_grove_map(grove_map):
 
 
 def part2(puzzle_input):
-    print('Q:')
+    print('Q: Figure out where the Elves need to go. What is the number of the first round where no Elf moves?')
 
+    grove_map = puzzle_input
+    round_i = 0
+    prev_grove_map = None
+    while prev_grove_map is None or not np.array_equal(grove_map, prev_grove_map):
+        prev_grove_map = np.copy(grove_map)
 
+        grove_map = pad_grove_map(grove_map)
+        proposed_moves = consider_and_propose_moves(grove_map, round_i)
+        grove_map = elves_move(grove_map, proposed_moves)
+        grove_map = prune_grove_map(grove_map)
+
+        round_i += 1
+
+    ans = round_i
 
     print(f'A: {ans}')
 
