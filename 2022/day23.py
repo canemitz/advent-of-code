@@ -37,6 +37,7 @@ def consider_and_propose_moves(grove_map, round_i):
 def propose_move(grove_map, elf_coord, round_i):
     elf_y, elf_x = elf_coord
 
+    # Define the 8 adjacent coords
     N = (elf_y - 1, elf_x)
     S = (elf_y + 1, elf_x)
     E = (elf_y, elf_x + 1)
@@ -54,10 +55,17 @@ def propose_move(grove_map, elf_coord, round_i):
         'E': [ E, NE, SE ]
     }
 
+    # Elves don't move if there isn't another elf adjacent to them in some direction
+    all_neighbor_coords = tuple(zip(*[N, S, E, W, NE, NW, SE, SW]))
+    if np.all(grove_map[all_neighbor_coords] == '.'):
+        return None
+
+    # After each round, the first direction checked moves to the end of the list of directions to check
     directions = ['N', 'S', 'W', 'E']
     round_mod_4 = round_i % 4
     directions_ordered = directions[round_mod_4:] + directions[:round_mod_4]
 
+    # For each of the four directions, this elf proposes moving in a direction if all the coords to check in that direction are empty
     proposed_move = None
     for direction in directions_ordered:
         coords = tuple(zip(*coords_to_check[direction]))
