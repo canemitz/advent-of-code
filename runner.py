@@ -1,6 +1,8 @@
 #! /usr/bin/python3
 
 """Run an Advent of Code solution.
+
+Usage: ./runner.py [puzzle arguments] [solution arguments | printing arguments]
 """
 
 
@@ -8,6 +10,7 @@ import argparse
 import datetime
 import importlib
 import json
+import os
 import time
 
 
@@ -15,19 +18,31 @@ def main():
     start_time = time.time()
 
     args = parse_args()
-    year         = args.year
-    day          = args.day
-    part         = args.part
-    verbose      = args.verbose
-    example      = args.example
-    skip_parsing = args.skip_parsing
-    print_input  = args.print_input
-    print_json   = args.json
+    year             = args.year
+    day              = args.day
+    part             = args.part
+    alt              = args.alt
+    verbose          = args.verbose
+    example          = args.example
+    skip_parsing     = args.skip_parsing
+    print_input      = args.print_input or args.print_input_json
+    print_input_json = args.print_input_json
+    babn             = args.babn
 
-    print(f"Getting solution for year {year}, day {day}, part {part}{' (using example input)' if example else ''}...\n")
+    soln_str = 'solution'
+    if babn:
+        soln_str = f"BABN's {soln_str}"
+    if alt:
+        soln_str = f'alt {soln_str} {alt}'
 
-    solutions = importlib.import_module(f'{year}.day{day}')
-    solution_function = getattr(solutions, f'part{part}{"_verbose" if verbose else ""}')
+    ex_str = ''
+    if example:
+        ex_str = f' (using example input{" " + example if example > 1 else ""})'
+
+    print(f"Getting {soln_str} for year {year}, day {day}, part {part}{ex_str}...\n")
+
+    solutions = importlib.import_module(f'{year}.day{day}{"_babn" if babn else ""}')
+    solution_function = getattr(solutions, f'part{part}{f"_alt{alt}" if alt else ""}{"_verbose" if verbose else ""}')
 
     example_str = ''
     if example:
@@ -48,7 +63,7 @@ def main():
             parsed_input = parse_input_function(input_file)
 
         if print_input:
-            if print_json:
+            if print_input_json:
                 parsed_input = json.dumps(parsed_input, indent=4)
             print(f'Puzzle input:\n{parsed_input}')
         else:
@@ -60,18 +75,30 @@ def main():
 def parse_args():
     today = datetime.date.today()
 
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-y', '--year', default=today.year)
-    parser.add_argument('-d', '--day',  default=today.day)
-    parser.add_argument('-p', '--part', default=1)
-    parser.add_argument('-x', '--example', action='count', help='Use example puzzle input (pass multiple times to use alternate example inputs)')
-    parser.add_argument('-v', '--verbose', action='store_true', help='Print output for comparison with example')
-    parser.add_argument('-s', '--skip-parsing', action='store_true', help='Pass file object directly to solution function')
-    parser.add_argument('-pr', '--print-input', action='store_true', help='Print parsed puzzle input instead of calling solution function')
-    parser.add_argument('-j', '--json', action='store_true', help='Print parsed puzzle input as json (helpful for dictionary-like inputs)')
+    # Avoid insertion of linebreak between long argument names and their help strings until reaching half the terminal width (default is just 24 chars)
+    MostlyRawTextHelpFormatter = lambda prog: argparse.RawTextHelpFormatter(prog, max_help_position=int( os.get_terminal_size().columns / 2 ))
+
+    parser = argparse.ArgumentParser(description=__doc__, add_help=True, usage=argparse.SUPPRESS, formatter_class=MostlyRawTextHelpFormatter)
+
+    puzzle_args = parser.add_argument_group('puzzle arguments')
+    puzzle_args.add_argument('-y' , '--year'        , default=today.year , help=f'AoC Year    [default: {today.year}]')
+    puzzle_args.add_argument('-d' , '--day'         , default=today.day  , help=f'Puzzle day  [default: {today.day}]')
+    puzzle_args.add_argument('-p' , '--part'        , default=1          , help=f'Puzzle part [default: 1]')
+    puzzle_args.add_argument('-x' , '--example'     , action='count'     , help='Use example puzzle input (pass multiple times to use alternate example inputs)')
+
+    solution_args = parser.add_argument_group('solution arguments')
+    solution_args.add_argument('-a' , '--alt'         , default=0          , help='Run alternate solution function part<PART>_alt<ALT>')
+    solution_args.add_argument('-v' , '--verbose'     , action='store_true', help='Run part<PART>_verbose (to print various intermediate steps)')
+    solution_args.add_argument('-bn', '--babn'        , action='store_true', help="Use BABN's solution module (<YEAR>.day<DAY>_babn)")
+    s_help = 'Pass file object directly to solution function\n(DEPRECATED, define custom parse_input function in the solution file instead)'
+    solution_args.add_argument('-s' , '--skip-parsing', action='store_true', help=s_help)
+
+
+    input_printing_args = parser.add_argument_group('printing arguments')
+    input_printing_args.add_argument('-pr', '--print-input'     , action='store_true', help='Print parsed puzzle input instead of calling solution function')
+    input_printing_args.add_argument('-pj', '--print-input-json', action='store_true', help='Print parsed puzzle input as json instead of calling solution function (helpful for dictionary-like inputs)')
 
     return parser.parse_args()
-
 
 def parse_input(input_file_obj):
     return input_file_obj.read().strip().split('\n')
