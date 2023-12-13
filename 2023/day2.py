@@ -1,15 +1,15 @@
 import re
 
 
+num_cubes = {
+    'red'  : 12,
+    'green': 13,
+    'blue' : 14
+}
+colors = num_cubes.keys()
+
 def part1(game_record):
     print('Q: Determine which games would have been possible if the bag had been loaded with only 12 red cubes, 13 green cubes, and 14 blue cubes. What is the sum of the IDs of those games?')
-
-    num_cubes = {
-        'red'  : 12,
-        'green': 13,
-        'blue' : 14
-    }
-    colors = num_cubes.keys()
 
     possible_game_ids = []
     for game_id, samples in game_record.items():
@@ -47,12 +47,8 @@ def parse_input(input_file_obj):
         game_record[game_id] = []
 
         for sample in game.split(';'):
-            sample_dict = {
-                'red'  : 0,
-                'green': 0,
-                'blue' : 0
-            }
-            color_count_regex = r'(?:(?P<red>\d+) red)|(?:(?P<green>\d+) green)|(?:(?P<blue>\d+) blue)'
+            sample_dict = { color: 0 for color in colors }
+            color_count_regex = r'|'.join([ f'(?:(?P<{color}>\\d+) {color})' for color in colors ])
 
             # Using re.search only returns the first match, while re.findall returns a list (so doesn't use group labels)
             # Using re.finditer gets all matches as match objects (including group names), but each match is a separate item
