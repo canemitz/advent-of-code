@@ -1,3 +1,4 @@
+import math
 import re
 
 
@@ -28,9 +29,16 @@ def part1(game_record):
 
 
 def part2(game_record):
-    print('Q:')
+    print('Q: For each game, find the minimum set of cubes that must have been present. What is the sum of the power of these sets?')
 
+    minimum_powers = []
+    for game_id, samples in game_record.items():
+        game_power = 1
+        for color in colors:
+            game_power *= max([ sample[color] for sample in samples if sample[color] ])
+        minimum_powers.append(game_power)
 
+    ans = sum(minimum_powers)
 
     print(f'A: {ans}')
 
